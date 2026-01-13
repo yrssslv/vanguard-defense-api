@@ -11,10 +11,7 @@ import Redis from 'ioredis';
     {
       provide: 'REDIS_CLIENT',
       useFactory: (configService: ConfigService) => {
-        return new Redis({
-          host: configService.get('REDIS_HOST', 'localhost'),
-          port: configService.get('REDIS_PORT', 6379),
-        });
+        return new Redis(configService.getOrThrow('REDIS_URL'));
       },
       inject: [ConfigService],
     },
