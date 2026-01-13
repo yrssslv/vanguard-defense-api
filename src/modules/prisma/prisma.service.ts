@@ -9,11 +9,6 @@ export class PrismaService
 {
   constructor(configService: ConfigService) {
     super({
-      datasources: {
-        db: {
-          url: configService.get<string>('DATABASE_URL'),
-        },
-      },
       log:
         configService.get<string>('NODE_ENV') === 'development'
           ? ['query', 'info', 'warn', 'error']

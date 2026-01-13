@@ -10,7 +10,7 @@ describe('SecurityService', () => {
   let configService: ConfigService;
 
   const mockConfigService = {
-    get: jest.fn((key: string, defaultValue: any) => {
+    get: jest.fn((key: string, defaultValue: unknown) => {
       if (key === 'ARGON2_MEMORY_COST') return 65536;
       if (key === 'ARGON2_TIME_COST') return 3;
       if (key === 'ARGON2_PARALLELISM') return 4;

@@ -1,7 +1,8 @@
-import { Controller, Post, Body, UseInterceptors } from '@nestjs/common';
+import { Controller, Post, Body, UseInterceptors, UnauthorizedException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
 import { AuthService } from '../services/auth.service';
 import { SignupDto } from '../dto/signup.dto';
+import { LoginDto } from '../dto/login.dto';
 import { IdempotencyInterceptor } from '../../common/interceptors/idempotency.interceptor';
 
 @ApiTags('auth')
@@ -21,5 +22,20 @@ export class AuthController {
   @ApiResponse({ status: 409, description: 'Email already in use.' })
   async signup(@Body() signupDto: SignupDto) {
     return this.authService.signup(signupDto);
+  }
+
+  @Post('login')
+  @ApiOperation({ summary: 'User login' })
+  @ApiResponse({ status: 200, description: 'Return access and refresh tokens.' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials.' })
+  async login(@Body() loginDto: LoginDto) {
+    const user = await this.authService.validateUser(
+      loginDto.email,
+      loginDto.password,
+    );
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    return this.authService.login(user);
   }
 }
