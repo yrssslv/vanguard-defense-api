@@ -1,11 +1,24 @@
 import { Module, Global } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SecurityService } from './services/security.service';
+import Redis from 'ioredis';
 
 @Global()
 @Module({
   imports: [ConfigModule],
-  providers: [SecurityService],
-  exports: [SecurityService],
+  providers: [
+    SecurityService,
+    {
+      provide: 'REDIS_CLIENT',
+      useFactory: (configService: ConfigService) => {
+        return new Redis({
+          host: configService.get('REDIS_HOST', 'localhost'),
+          port: configService.get('REDIS_PORT', 6379),
+        });
+      },
+      inject: [ConfigService],
+    },
+  ],
+  exports: [SecurityService, 'REDIS_CLIENT'],
 })
 export class CommonModule {}
