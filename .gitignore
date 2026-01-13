@@ -1,1 +1,56 @@
-node_modules
+# Build and Dependencies
+/dist
+/node_modules
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment and Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env.local
+
+# Database
+# Prisma migrations are typically committed to track schema history
+# but we ignore temporary sqlite if any were used (though we use PG)
+*.db
+*.db-journal
+
+# Testing and Coverage
+/coverage
+/.nyc_output
+/test-results
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.project
+.settings/
+.classpath
+
+# OS files
+.DS_Store
+Thumbs.db
+.Spotlight-V100
+.Trashes
+
+# Docker dependencies
+docker-compose.override.yml
+
+# Temporary and Cache
+.npm
+.pnpm-store
+.turbo
+.next
+.cache
+/tmp
+/temp

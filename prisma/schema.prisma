@@ -1,0 +1,105 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [postgis]
+}
+
+enum Role {
+  ADMIN
+  OPERATOR
+  VIEWER
+}
+
+enum ReportStatus {
+  PENDING
+  VALIDATED
+  REJECTED
+}
+
+enum TargetCondition {
+  DESTROYED
+  DAMAGED
+  HIT
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  unitName  String   @map("unit_name")
+  role      Role     @default(VIEWER)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  reports           Report[] @relation("OperatorReports")
+  validatedReports  Report[] @relation("AdminValidation")
+
+  @@map("users")
+}
+
+model TargetCategory {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  reports Report[]
+
+  @@map("target_categories")
+}
+
+model Weapon {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  reports   Report[]
+
+  @@map("weapons")
+}
+
+model Report {
+  id          String                               @id @default(uuid())
+  version     Int                                  @default(0)
+  operatorId  String                               @map("operator_id")
+  categoryId  String                               @map("category_id")
+  weaponId    String                               @map("weapon_id")
+  
+  status      ReportStatus                         @default(PENDING)
+  condition   TargetCondition
+  targetName  String?                              @map("target_name")
+  
+  location    Unsupported("geometry(Point, 4326)")
+  idempotencyKey String?                           @unique @map("idempotency_key")
+
+  validatedById String?                            @map("validated_by_id")
+  rejectionReason String?                          @map("rejection_reason")
+
+  timestamp   DateTime                             @default(now())
+  validatedAt DateTime?                            @map("validated_at")
+  createdAt   DateTime                             @default(now()) @map("created_at")
+  updatedAt   DateTime                             @updatedAt @map("updated_at")
+
+  operator    User           @relation("OperatorReports", fields: [operatorId], references: [id])
+  category    TargetCategory @relation(fields: [categoryId], references: [id])
+  weapon      Weapon         @relation(fields: [weaponId], references: [id])
+  validator   User?          @relation("AdminValidation", fields: [validatedById], references: [id])
+
+  @@index([operatorId])
+  @@index([status, createdAt])
+  @@index([location], type: Gist)
+  @@map("reports")
+}
+
+model AIReport {
+  id         String   @id @default(uuid())
+  content    String   @db.Text
+  reportType String   @map("report_type")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("ai_reports")
+}
