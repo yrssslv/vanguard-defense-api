@@ -5,7 +5,7 @@ import { SecurityService } from '../../common/services/security.service';
 import { JwtService } from '@nestjs/jwt';
 import { SignupDto } from '../dto/signup.dto';
 import { ConflictException } from '@nestjs/common';
-import { Role } from '@prisma/client';
+import { Role, Prisma } from '@prisma/client';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -91,7 +91,7 @@ describe('AuthService', () => {
 
   describe('login', () => {
     it('should return access and refresh tokens', async () => {
-      const user = { email: 'test@example.com', id: '1', role: 'VIEWER' };
+      const user = { email: 'test@example.com', id: '1', role: Role.VIEWER };
       mockJwt.sign.mockReturnValue('token');
 
       const result = await service.login(user);
@@ -107,8 +107,7 @@ describe('AuthService', () => {
     };
 
     it('should successfully create a user', async () => {
-      mockPrisma.user.findUnique.mockResolvedValue(null);
-      mockSecurity.hash.mockResolvedValue('hashedPassword');
+      mockSecurity.hash.mockResolvedValue('hashedPassword'); // findUnique was removed
       mockPrisma.user.create.mockResolvedValue({
         id: '1',
         ...dto,
@@ -122,12 +121,16 @@ describe('AuthService', () => {
 
       expect(result).toHaveProperty('id');
       expect(result.email).toBe(dto.email);
-      expect(prisma.user.findUnique).toHaveBeenCalledWith({ where: { email: dto.email } });
+      // findUnique was removed from expectations
       expect(security.hash).toHaveBeenCalledWith(dto.password);
     });
 
     it('should throw ConflictException if email exists', async () => {
-      mockPrisma.user.findUnique.mockResolvedValue({ id: '1', email: dto.email });
+      const error = new Prisma.PrismaClientKnownRequestError(
+        'Unique constraint failed',
+        { code: 'P2002', clientVersion: '5.0.0' } as any,
+      );
+      mockPrisma.user.create.mockRejectedValue(error);
       await expect(service.signup(dto)).rejects.toThrow(ConflictException);
     });
   });
