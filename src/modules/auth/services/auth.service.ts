@@ -5,6 +5,7 @@ import { SignupDto } from '../dto/signup.dto';
 import { Role, Prisma } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from '../dto/login.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +15,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly securityService: SecurityService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async validateUser(email: string, pass: string): Promise<Omit<import('@prisma/client').User, 'password'> | null> {
@@ -30,10 +32,12 @@ export class AuthService {
 
   async login(user: { id: string; email: string; role: Role }) {
     const payload = { email: user.email, sub: user.id, role: user.role };
+    const refreshExpiration = this.configService.get<string>('JWT_REFRESH_EXPIRATION', '7d');
+    
     this.logger.log(`User logged in: ${user.email}`);
     return {
       accessToken: this.jwtService.sign(payload),
-      refreshToken: this.jwtService.sign(payload, { expiresIn: '7d' }), // Using default for now, can be configured
+      refreshToken: this.jwtService.sign(payload, { expiresIn: refreshExpiration } as any),
     };
   }
 

@@ -6,12 +6,14 @@ import { JwtService } from '@nestjs/jwt';
 import { SignupDto } from '../dto/signup.dto';
 import { ConflictException } from '@nestjs/common';
 import { Role, Prisma } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 
 describe('AuthService', () => {
   let service: AuthService;
   let prisma: PrismaService;
   let security: SecurityService;
   let jwtService: JwtService;
+  let configService: ConfigService;
 
   const mockPrisma = {
     user: {
@@ -27,6 +29,14 @@ describe('AuthService', () => {
 
   const mockJwt = {
     sign: jest.fn(),
+  };
+
+  const mockConfig = {
+    get: jest.fn((key: string, defaultValue?: any) => {
+      if (key === 'JWT_REFRESH_EXPIRATION') return '7d';
+      return defaultValue;
+    }),
+    getOrThrow: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -45,6 +55,10 @@ describe('AuthService', () => {
           provide: JwtService,
           useValue: mockJwt,
         },
+        {
+          provide: ConfigService,
+          useValue: mockConfig,
+        },
       ],
     }).compile();
 
@@ -52,6 +66,7 @@ describe('AuthService', () => {
     prisma = module.get<PrismaService>(PrismaService);
     security = module.get<SecurityService>(SecurityService);
     jwtService = module.get<JwtService>(JwtService);
+    configService = module.get<ConfigService>(ConfigService);
   });
 
   afterEach(() => {

@@ -31,34 +31,48 @@ describe('RolesGuard', () => {
 
   it('should throw ForbiddenException if user does not exist', () => {
     jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([Role.ADMIN]);
-    (mockExecutionContext.switchToHttp().getRequest as jest.Mock).mockReturnValue({
+    (
+      mockExecutionContext.switchToHttp().getRequest as jest.Mock
+    ).mockReturnValue({
       user: null,
     });
 
-    expect(() => guard.canActivate(mockExecutionContext)).toThrow(ForbiddenException);
+    expect(() => guard.canActivate(mockExecutionContext)).toThrow(
+      ForbiddenException,
+    );
   });
 
   it('should throw ForbiddenException if user has no role', () => {
     jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([Role.ADMIN]);
-    (mockExecutionContext.switchToHttp().getRequest as jest.Mock).mockReturnValue({
+    (
+      mockExecutionContext.switchToHttp().getRequest as jest.Mock
+    ).mockReturnValue({
       user: {},
     });
 
-    expect(() => guard.canActivate(mockExecutionContext)).toThrow(ForbiddenException);
+    expect(() => guard.canActivate(mockExecutionContext)).toThrow(
+      ForbiddenException,
+    );
   });
 
   it('should throw ForbiddenException if user role does not match', () => {
     jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([Role.ADMIN]);
-    (mockExecutionContext.switchToHttp().getRequest as jest.Mock).mockReturnValue({
+    (
+      mockExecutionContext.switchToHttp().getRequest as jest.Mock
+    ).mockReturnValue({
       user: { role: Role.VIEWER },
     });
 
-    expect(() => guard.canActivate(mockExecutionContext)).toThrow(ForbiddenException);
+    expect(() => guard.canActivate(mockExecutionContext)).toThrow(
+      ForbiddenException,
+    );
   });
 
   it('should allow access if user role matches', () => {
     jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([Role.ADMIN]);
-    (mockExecutionContext.switchToHttp().getRequest as jest.Mock).mockReturnValue({
+    (
+      mockExecutionContext.switchToHttp().getRequest as jest.Mock
+    ).mockReturnValue({
       user: { role: Role.ADMIN },
     });
 
